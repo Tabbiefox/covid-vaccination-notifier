@@ -1,0 +1,24 @@
+{
+    "conf": "default",
+    "host": "localhost",
+    "port": 35080,
+    "dataDir": "./data/",
+    "covidApi": {
+        "covidApiUrl": "http://localhost:35080"
+    },
+    "clickatellApi": {
+        "apiKey": ""
+    },
+    "covidNotification": {
+        "poolingInterval": 300000,
+        "messageTimeout": 3600000,
+        "notifications": [
+            {
+                "city": "",
+                "region": "",
+                "phoneNumber": "",
+                "age": 0
+            }
+        ]
+    }
+}
