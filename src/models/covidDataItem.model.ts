@@ -1,3 +1,7 @@
+export interface CovidData {
+    lastUpdate: Date;
+    items: CovidDataItem[];
+}
 export interface CovidDataItem {
     name: string;
     city: string;

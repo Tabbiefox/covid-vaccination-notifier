@@ -1,9 +1,8 @@
 import { ICovidApiConfig } from '../config';
-import { Observable, Subject, of, Subscription } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-import { distinctUntilChanged, map, catchError } from 'rxjs/operators';
-import { equals } from '../helpers'
-import { CovidDataItem, CovidApiData } from '../models';
+import { map, catchError, retry } from 'rxjs/operators';
+import { CovidData, CovidDataItem, CovidApiData } from '../models';
 import { XMLHttpRequest } from 'xmlhttprequest';
 
 /**
@@ -13,26 +12,39 @@ export class CovidApiProvider {
 
     private config: ICovidApiConfig;
 
+    private data: CovidData;
+
+    private apiData: CovidApiData;
+
 
     constructor(config: ICovidApiConfig) {
         this.config = config;
     }
 
-    public getData(): Observable<CovidDataItem[]> {
+    public getCurrentData(): CovidData {
+        return this.data;
+    }
+
+    public getCurrentApiData(): CovidApiData {
+        return this.apiData;
+    }
+
+    public getDataObservable(): Observable<CovidData> {
         function createXHR() {
             return new XMLHttpRequest()
         }
         return ajax({
             createXHR,
-            url: this.config.covidApiUrl,
+            url: this.config.url,
             crossDomain: true,
-            responseType: "json"
+            responseType: "json",
+            timeout: this.config.timeout,
         }).pipe(
             map(data => {
-                let response = data.response as CovidApiData;
-                let list: CovidDataItem[] = [];
-                if (response && 'payload' in response && response.payload.length > 0) {
-                    Array.from(response.payload).forEach(x => {
+                this.apiData = data.response as CovidApiData;
+                let items: CovidDataItem[] = [];
+                if (this.apiData && 'payload' in this.apiData && this.apiData.payload.length > 0) {
+                    Array.from(this.apiData.payload).forEach(x => {
                         let item: CovidDataItem = {
                             name: x.title,
                             street: x.street_name ? x.street_name + ' ' + (x.street_number ? x.street_number : '') : null,
@@ -43,12 +55,18 @@ export class CovidApiProvider {
                             ageFrom: x.age_from ? parseInt(x.age_from) : null,
                             ageTo: x.age_to ? parseInt(x.age_to) : null
                         }
-                        if (item.freeCapacity > 0)
-                            list.push(item);
+                        items.push(item);
                     });
                 }
-                return list;
-            }), catchError(error => {
+                this.data = {
+                    lastUpdate: new Date(),
+                    items: items
+                }
+                console.log('CovidApiProvider: (' + new Date().toUTCString() + ') Loaded new data from API with ' + this.data.items.map(x => x.freeCapacity).reduce((a, b) => a + b, 0) + ' free spots.');
+                return this.data;
+            }),
+            retry(this.config.retries),
+            catchError(error => {
                 console.error('CovidApiProvider: Ajax error', (!!error && 'xhr' in error && 'responseText' in error.xhr ? error.xhr.responseText : error));
                 return of(error);
             })

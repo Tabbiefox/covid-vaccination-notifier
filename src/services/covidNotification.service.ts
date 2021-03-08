@@ -1,7 +1,7 @@
 import { ICovidNotificationConfig, ICovidNotificationItemConfig } from '../config';
 import { Observable, Subject, Subscription, timer } from 'rxjs';
 import { switchMap, retry, repeat } from 'rxjs/operators';
-import { CovidDataItem, CovidNotificationItem } from '../models';
+import { CovidData, CovidDataItem, CovidNotificationItem } from '../models';
 import { getProviders } from '../app';
 
 /**
@@ -26,7 +26,7 @@ export class CovidNotificationService {
     }
 
     public start(): CovidNotificationService {
-        this.dataSubscription = this.getDataObservable().subscribe((data) => {
+        this.dataSubscription = this.getDataPollingObservable().subscribe((data) => {
             this.updateNotifications(data);
         });
 
@@ -59,15 +59,15 @@ export class CovidNotificationService {
             });
     }
 
-    private updateNotifications(data: CovidDataItem[]) {
-        if (!data || !data.length)
+    private updateNotifications(data: CovidData) {
+        if (!data || !data.items || !data.items.length)
             return;
 
         let currentDate = new Date();
         this.notifications = this.notifications.map(notification => {
             let lastFreeCapacity = notification.freeCapacity;
             notification.freeCapacityDate = currentDate;
-            notification.freeCapacity = data.filter(x => {
+            notification.freeCapacity = data.items.filter(x => {
                 return ((!x.ageFrom || x.ageFrom <= notification.age)
                     && (!x.ageTo || x.ageTo >= notification.age)
                     && x.freeCapacity > 0
@@ -78,7 +78,7 @@ export class CovidNotificationService {
                 }).map(x => x.freeCapacity).reduce((a, b) => a + b, 0);
 
             if (
-                (!notification.lastNotificationDate || notification.lastNotificationDate.getTime() + this.config.messageTimeout < currentDate.getTime())
+                (!notification.lastNotificationDate || !lastFreeCapacity || notification.lastNotificationDate.getTime() + this.config.messageTimeout < currentDate.getTime())
                 && notification.freeCapacity > lastFreeCapacity
             ) {
                 notification.lastNotificationDate = currentDate;
@@ -88,10 +88,9 @@ export class CovidNotificationService {
         });
     }
 
-    private getDataObservable(): Observable<CovidDataItem[]> {
-        return timer(0, this.config.poolingInterval).pipe(
-            switchMap(tick => getProviders().covidApi.getData()),
-            retry(3),
+    private getDataPollingObservable(): Observable<CovidData> {
+        return timer(0, this.config.pollingInterval).pipe(
+            switchMap(tick => getProviders().covidApi.getDataObservable()),
             repeat()
         );
     }

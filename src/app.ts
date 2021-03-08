@@ -1,7 +1,7 @@
 import { IConfig } from './config';
 import express from 'express';
 import HTTPErrors from 'http-errors';
-import WebRouter from './routes/web.routes';
+import ApiRouter from './routes/api.routes';
 import createHttpError from 'http-errors';
 import { CovidNotificationService } from './services';
 import { ClickatellApiProvider, CovidApiProvider } from './providers';
@@ -72,7 +72,7 @@ export function initServer(config: IConfig): express.Express {
  */
 export function initServerRoutes(server: express.Express): void {
     // Register known routes
-    server.use('/', WebRouter);
+    server.use('/', ApiRouter);
 
     // Register route fallback for every other request
     server.use((req, res, next) => {

@@ -542,7 +542,7 @@
                 {
                     "c_date": "2021-03-19",
                     "is_closed": 1,
-                    "free_capacity": 0
+                    "free_capacity": 10
                 },
                 {
                     "c_date": "2021-03-20",
@@ -580,7 +580,7 @@
                 {
                     "c_date": "2021-03-08",
                     "is_closed": 0,
-                    "free_capacity": 8
+                    "free_capacity": 10
                 },
                 {
                     "c_date": "2021-03-09",
@@ -889,12 +889,12 @@
                 {
                     "c_date": "2021-03-14",
                     "is_closed": 1,
-                    "free_capacity": 5
+                    "free_capacity": 0
                 },
                 {
                     "c_date": "2021-03-15",
                     "is_closed": 1,
-                    "free_capacity": 10
+                    "free_capacity": 0
                 },
                 {
                     "c_date": "2021-03-16",
@@ -1017,12 +1017,12 @@
                 {
                     "c_date": "2021-03-21",
                     "is_closed": 1,
-                    "free_capacity": 5
+                    "free_capacity": 0
                 },
                 {
                     "c_date": "2021-03-22",
                     "is_closed": 1,
-                    "free_capacity": 5
+                    "free_capacity": 0
                 }
             ]
         },

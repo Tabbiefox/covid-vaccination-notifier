@@ -4,13 +4,15 @@
     "port": 35080,
     "dataDir": "./data/",
     "covidApi": {
-        "covidApiUrl": "http://localhost:35080"
+        "url": "http://localhost:35080/covidApiDemo",
+        "retries": 3,
+        "timeout": 15000
     },
     "clickatellApi": {
         "apiKey": ""
     },
     "covidNotification": {
-        "poolingInterval": 300000,
+        "pollingInterval": 300000,
         "messageTimeout": 3600000,
         "notifications": [
             {

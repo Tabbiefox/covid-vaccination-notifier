@@ -1,1 +1,1 @@
-export * as WebRoutes from './web.routes';
+export * as ApiRoutes from './api.routes';
